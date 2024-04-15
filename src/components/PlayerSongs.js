@@ -1,18 +1,16 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FaPlay } from "react-icons/fa";
-import { IoPlayBack } from "react-icons/io5"
-import { IoPlayForward } from "react-icons/io5";
+import { IoPlayBack, IoPlayForward } from "react-icons/io5"
 
 
 const PlayerSongs = () => {
-    const urlApi= 'https://playground.4geeks.com/sound/songs'
     const [storedSongs, setStoredSongs]= useState([])
+    const [listenSong, setListenSong]= useState(0) 
     const songRef= useRef(null)
     
     
     const getSongs = () => {
-        const urlApi= 'https://playground.4geeks.com/sound/songs'
-        fetch(urlApi)
+        fetch('https://playground.4geeks.com/sound/songs')
         .then((response) => {
             console.log(response)
             return response.json()
@@ -25,38 +23,47 @@ const PlayerSongs = () => {
         .catch((error) => console.log(error))
     }
 
-    const handleSelectSong= (url)=>{
-        console.log(url)
-        songRef.current.url=urlApi+url
-        console.log(songRef.current.url)
-        songRef.current.play()
+    const handleSelectSong= (url, id)=>{
+        const urlApi= 'https://playground.4geeks.com' + url
+
+        console.log("debe ser:",url, id)
+        songRef.current.src=urlApi
+        console.log(songRef.current.src)
+        setListenSong(id) 
+        handlePlay() 
     }
+
+    const handlePlay= ()=>{
+        songRef.current.play()
+    }  
 
     useEffect(() => {
         getSongs()
     },[])
     
     return (
-        <>  
-            <button>
-                <IoPlayBack size={50} />
-            </button>
-            <button>
-                <FaPlay size={50} />
-            </button>
-            <button>
-                <IoPlayForward size={50} />
-            </button>
-            
-            <div className='d-grid col-3 mx-auto'>
-                {
-                    Array.isArray(storedSongs) && storedSongs.length > 0 &&
-                        storedSongs.map(({id, url, name})=>{/* Renderizo cada canción con la propiedad name. */
-                            return <button type='button' className='btn btn-outline-secondary' onClick={()=>{handleSelectSong(url)}} key={id} >{name}</button>
-                    })
-                }
+        <> 
+            <div className="container">
+                <audio ref={songRef}/>
+                <button onClick={()=>handlePlay(listenSong)}>
+                    <IoPlayBack size={50} />
+                </button>
+                <button>
+                    <FaPlay size={50} />
+                </button>
+                <button>
+                    <IoPlayForward size={50} />
+                </button>
+                
+                <div className='d-grid col-3 mx-auto'>
+                    {
+                        Array.isArray(storedSongs) && storedSongs.length > 0 &&
+                            storedSongs.map(({id, name, url})=>{/* Renderizo cada canción con la propiedad name. La url obtenida es de la canción */
+                                return <button type='button' className='btn btn-outline-secondary' onClick={()=>{handleSelectSong(url, id), handlePlay()}} key={id}>{name}</button>
+                        })
+                    }
+                </div>
             </div>
-            <audio ref={songRef} onClick={()=>handleSelectSong()} controls/>
         </>
     )
 }
@@ -73,3 +80,4 @@ export default PlayerSongs
 
             
 
+        

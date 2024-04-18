@@ -23,13 +23,13 @@ const PlayerSongs = () => {
         .catch((error) => console.log(error))
     }
 
-    const handleSelectSong= (url, id)=>{
-        const urlApi= 'https://playground.4geeks.com' + url
+    const handleSelectSong= (song, index)=>{
+        const urlApi= 'https://playground.4geeks.com' + song.url
 
-        console.log("debe ser:",url, id)
+        console.log("canción seleccionada:", song)
         songRef.current.src=urlApi
-        console.log(songRef.current.src)
-        setSelectedSong(id)
+        console.log("Escuchando:",songRef.current.src)
+        setSelectedSong(index)
         setchangeButton(true) 
         handlePlay() 
     }
@@ -42,38 +42,61 @@ const PlayerSongs = () => {
         songRef.current.pause()
     }
 
+    const handlePlayBack= (selectedSong)=>{
+        console.log('canción seleccionada', selectedSong)
+        const backSong= selectedSong -1 < 0 ? storedSongs[storedSongs.length -1] : storedSongs[selectedSong -1]
+        const urlApi= 'https://playground.4geeks.com' + backSong.url
+        console.log('conacatenación', urlApi)
+        songRef.current.src= urlApi
+        console.log('Canción anterior',backSong)
+        setSelectedSong(selectedSong -1 < 0 ? storedSongs.length -1 : storedSongs - 1)
+        handlePlay()
+    }
+
+    const handlePlayForward= (selectedSong)=>{
+        console.log('canción seleccionada:',selectedSong)
+        const forwardSong= selectedSong +1 === storedSongs.length ? storedSongs[0] : storedSongs[selectedSong +1]
+        const urlApi= 'https://playground.4geeks.com' + forwardSong.url
+        songRef.current.src= urlApi
+        console.log('Canción siguiente:', songRef.current.src)
+        setSelectedSong(selectedSong +1 === storedSongs.length ? 0 : selectedSong +1)
+        handlePlay() 
+    }
+
     useEffect(() => {
         getSongs()
     },[])
     
     return (
         <> 
-            <div className="container">
+                
+            <div className='d-grid col-2 mx-auto'>
+                {
+                    Array.isArray(storedSongs) && storedSongs.length > 0 &&
+                        storedSongs.map((song, index)=>{/* Renderizo cada canción con la propiedad name. La propiedad url obtenida es de la canción */
+                        return <button type='button' className='btn btn-outline-secondary' onClick={()=>{handleSelectSong(song, index)}} key={index}>{song.name}</button>
+                    })
+                }
+            </div>
+  
+            <div className="d-flex justify-content-center">
                 <audio ref={songRef}/>
                 <button>
-                    <IoPlayBack size={50}/>
+                    <IoPlayBack size={25} onClick={()=>handlePlayBack(selectedSong)}/>
                 </button>
                 {
-                    <button onClick={()=>setchangeButton(!changeButton)}>{changeButton ? <IoPause size={50} onClick={()=>handlePause()}/> : <IoPlay size={50} onClick={()=>handlePlay()}/>}</button>
+                    <button onClick={()=>setchangeButton(!changeButton)}>{changeButton ? <IoPause size={25} onClick={()=>handlePause()}/> : <IoPlay size={25} onClick={()=>handlePlay()}/>}</button>
                 }       
                 <button>
-                    <IoPlayForward size={50} />
+                    <IoPlayForward size={25} onClick={()=>handlePlayForward(selectedSong)}/>
                 </button>
-                
-                <div className='d-grid col-3 mx-auto'>
-                    {
-                        Array.isArray(storedSongs) && storedSongs.length > 0 &&
-                            storedSongs.map(({id, name, url})=>{/* Renderizo cada canción con la propiedad name. La propiedad url obtenida es de la canción */
-                                return <button type='button' className='btn btn-outline-secondary' onClick={()=>{handleSelectSong(url, id)}} key={id}>{name}</button>
-                        })
-                    }
-                </div>
             </div>
-        </>
-    )
+    </>
+)
 }
 
 export default PlayerSongs
+                                
     
     
             
